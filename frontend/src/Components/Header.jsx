@@ -32,6 +32,18 @@ const Header = ({ onMenuClick, onSidebarToggle, title, isSidebarCollapsed }) => 
     navigate('/settings');
   };
 
+  const handleLogout = () => {
+    // Clear token and any stored auth data
+    localStorage.removeItem("token"); // or whatever key you use
+    localStorage.removeItem("user"); // optional, if you're storing user info
+
+    // Optional: Close any popups
+    closeAllPopups();
+
+    // Redirect to login
+    window.location.href = "/signin";
+  };
+
   return (
     <header className="flex items-center justify-between p-4 bg-black text-white shadow-lg">
       {/* Mobile Menu Button */}
@@ -107,6 +119,7 @@ const Header = ({ onMenuClick, onSidebarToggle, title, isSidebarCollapsed }) => 
                 onClick={handleSettings}
                 className="flex items-center w-full px-4 py-2 text-sm text-gray-200 hover:bg-[#5a47a5] transition-colors focus:outline-none focus:bg-[#5a47a5]"
               >
+<<<<<<< HEAD
                 <FiSettings className="mr-2" size={18} /> Settings
               </button>
               <button
@@ -118,6 +131,45 @@ const Header = ({ onMenuClick, onSidebarToggle, title, isSidebarCollapsed }) => 
             </motion.div>
           )}
         </AnimatePresence>
+=======
+                <div className="px-4 py-3 border-b border-gray-700">
+                  <p className="text-sm font-medium text-gray-100">
+                    Signed in as
+                  </p>
+                  <p className="text-sm text-gray-400 truncate">
+                    user@example.com
+                  </p>
+                </div>
+                <div className="py-1">
+                  <button
+                    className="w-full px-4 py-2 flex items-center gap-3 text-sm text-gray-300 hover:bg-gray-700"
+                    onClick={closeAllPopups}
+                  >
+                    <FiUser size={16} />
+                    Profile
+                  </button>
+                  <button
+                    className="w-full px-4 py-2 flex items-center gap-3 text-sm text-gray-300 hover:bg-gray-700"
+                    onClick={onSettingsClick}
+                  >
+                    <FiSettings size={16} />
+                    Settings
+                  </button>
+                </div>
+                <div className="py-1 border-t border-purple-900/50">
+                  <button
+                    className="w-full px-4 py-2 flex items-center gap-3 text-sm text-purple-300 hover:bg-purple-700/50"
+                    onClick={handleLogout}
+                  >
+                    <FiLogOut size={16} />
+                    Logout
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+>>>>>>> b5af7eb3ab481f3c6c878fce9b007a32294a35d6
       </div>
     </header>
   );

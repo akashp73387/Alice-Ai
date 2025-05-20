@@ -14,7 +14,7 @@ const SignIn = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch("http://195.201.164.158:8002/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,6 +40,7 @@ const SignIn = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#1f1e1d] text-[#c2c0b6] px-4">
