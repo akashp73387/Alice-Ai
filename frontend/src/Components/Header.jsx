@@ -85,6 +85,18 @@ const Header = () => {
     setDropdownOpen(false);
   };
 
+  const handleLogout = () => {
+    // Clear token and any stored auth data
+    localStorage.removeItem("token"); // or whatever key you use
+    localStorage.removeItem("user"); // optional, if you're storing user info
+
+    // Optional: Close any popups
+    closeAllPopups();
+
+    // Redirect to login
+    window.location.href = "/signin";
+  };
+
   return (
     <header className="bg-[#1f1e1d] border-b border-gray-700 px-4 py-3 flex items-center justify-between sticky top-0 z-50 shadow-lg">
       {/* Logo */}
@@ -255,7 +267,7 @@ const Header = () => {
                 <div className="py-1 border-t border-purple-900/50">
                   <button
                     className="w-full px-4 py-2 flex items-center gap-3 text-sm text-purple-300 hover:bg-purple-700/50"
-                    onClick={closeAllPopups}
+                    onClick={handleLogout}
                   >
                     <FiLogOut size={16} />
                     Logout
