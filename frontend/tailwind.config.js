@@ -5,8 +5,9 @@ export default {
   theme: {
     extend: {
       colors: {
-        purpleText: '#7c3aed', // or any shade of purple you like
-      },
+        dark_background: '#343541',
+        dark_textcolor: '#ECECF1'
+      }
     },
   },
   plugins: [],
