@@ -1,14 +1,39 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import Sidebar from "../Components/Sidebar";
+import { FiSend, FiPaperclip, FiMic, FiWifi, FiWifiOff, FiSettings, FiSmile } from "react-icons/fi";
+import Sidebar from "../Components/SideBar";
 import Header from "../Components/Header";
-// import SearchBar from "../Components/SearchBar";
 import ChatBubble from "../Components/ChatBubble";
-import { FiSend, FiPaperclip, FiMic, FiWifi, FiWifiOff } from "react-icons/fi";
+
+class ErrorBoundary extends React.Component {
+  state = { hasError: false, error: null };
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-4 text-center text-red-400">
+          <h3 className="text-lg font-semibold">Something went wrong</h3>
+          <p className="text-sm">{this.state.error?.message || "Unknown error"}</p>
+          <button
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="mt-2 px-4 py-2 bg-[#7B54D3] text-white rounded-md hover:bg-[#6B46C1]"
+          >
+            Try Again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const MainPage = () => {
-  const isLoggedIn = !!localStorage.getItem("token"); 
+  const isLoggedIn = !!localStorage.getItem("token");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [chat, setChat] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -20,16 +45,67 @@ const MainPage = () => {
   const [isListening, setIsListening] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [hasConnected, setHasConnected] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState(null);
+  const [editText, setEditText] = useState("");
+  const [chatTitle, setChatTitle] = useState("New Chat");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [connectionError, setConnectionError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
-  
+  const reconnectAttempts = useRef(0);
+  const maxReconnectAttempts = 5;
 
+  const connectWebSocket = useCallback(() => {
+    setIsLoading(true);
+    const socket = new WebSocket("ws://localhost:3001");
+    socketRef.current = socket;
 
+    socket.onopen = () => {
+      setConnectionStatus("connected");
+      setHasConnected(true);
+      setConnectionError(null);
+      setIsLoading(false);
+      reconnectAttempts.current = 0;
+      addBotMessage("Hello! I'm your Alice AI assistant. How can I help you today?");
+    };
 
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        addMessage(data.type === "user" ? "user" : "bot", data.message);
+        setIsTyping(false);
+        updateChatHistory(data.message);
+      } catch (err) {
+        console.error("WebSocket message parsing error:", err);
+      }
+    };
+
+    socket.onclose = () => {
+      setConnectionStatus("disconnected");
+      setIsLoading(false);
+      if (hasConnected && reconnectAttempts.current < maxReconnectAttempts) {
+        addBotMessage(`Connection lost. Reconnecting (${reconnectAttempts.current + 1}/${maxReconnectAttempts})...`);
+        setTimeout(() => {
+          reconnectAttempts.current += 1;
+          connectWebSocket();
+        }, 3000);
+      } else if (hasConnected) {
+        setConnectionError("Failed to reconnect to server. Please check your connection.");
+      }
+    };
+
+    socket.onerror = (error) => {
+      setConnectionStatus("disconnected");
+      setIsLoading(false);
+      setConnectionError("WebSocket error. Please ensure the server is running.");
+      console.error("WebSocket error:", error);
+    };
+  }, [hasConnected]);
 
   useEffect(() => {
     if (!isLoggedIn && msg.trim() !== "") {
@@ -61,46 +137,31 @@ const MainPage = () => {
         timestamp: new Date(Date.now() - 259200000),
       },
     ]);
-  }, []);
+    setIsLoading(false);
+  }, [navigate]);
 
   useEffect(() => {
-    const socket = new WebSocket("http://localhost:3001");
-    // ws://195.201.164.158:8765
-    socketRef.current = socket;
-
-    socket.onopen = () => {
-      setConnectionStatus("connected");
-      setHasConnected(true);
-      addBotMessage(
-        "Hello! I'm your Alice AI assistant. How can I help you today?"
-      );
+    connectWebSocket();
+    return () => {
+      socketRef.current?.close();
     };
+  }, [connectWebSocket]);
 
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      addMessage(data.type === "user" ? "user" : "bot", data.message);
-      setIsTyping(false);
-    };
-
-    socket.onclose = () => {
-      setConnectionStatus("disconnected");
-      if (hasConnected) {
-        addBotMessage("Connection lost. Trying to reconnect...");
-      }
-    };
-
-    socket.onerror = () => {
-      setConnectionStatus("disconnected");
-    };
-
-    return () => socket.close();
-  }, []);
-
-  const addMessage = (from, text) => {
-    setChat((prev) => [...prev, { from, text, timestamp: new Date() }]);
+  const addMessage = (from, text, id = Date.now(), reactions = []) => {
+    setChat((prev) => [...prev, { id, from, text, timestamp: new Date(), reactions }]);
   };
 
   const addBotMessage = (text) => addMessage("bot", text);
+
+  const updateChatHistory = (message) => {
+    if (activeChat) {
+      setChatHistory((prev) =>
+        prev.map((chat) =>
+          chat.id === activeChat ? { ...chat, lastMessage: message, timestamp: new Date() } : chat
+        )
+      );
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -116,34 +177,48 @@ const MainPage = () => {
   };
 
   const sendMessage = (messageToSend = null) => {
-    stopListening(); // Ensure mic stops before sending
-
+    stopListening();
     const text = messageToSend !== null ? messageToSend : msg;
-    if (!text.trim() || connectionStatus !== "connected" || !socketRef.current)
-      return;
+    if (!text.trim() || connectionStatus !== "connected" || !socketRef.current) return;
 
-    socketRef.current.send(
-      JSON.stringify({ user_id: 2090364640, message: text })
-    );
+    socketRef.current.send(JSON.stringify({ user_id: 2090364640, message: text }));
     addMessage("user", text);
     setMsg("");
+    setShowEmojiPicker(false);
     setIsTyping(true);
     inputRef.current?.focus();
+
+    if (!activeChat) {
+      const newChatId = Date.now();
+      setChatHistory((prev) => [
+        {
+          id: newChatId,
+          title: text.slice(0, 20) + (text.length > 20 ? "..." : ""),
+          lastMessage: text,
+          timestamp: new Date(),
+        },
+        ...prev,
+      ]);
+      setActiveChat(newChatId);
+      setChatTitle(text.slice(0, 20) + (text.length > 20 ? "..." : ""));
+    }
   };
 
   const handleKeyPress = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      const isLoggedIn = !!localStorage.getItem("token");
       if (!isLoggedIn) {
         navigate("/signin");
         return;
       }
-      sendMessage();
+      if (editingMessageId) {
+        handleEditSubmit();
+      } else {
+        sendMessage();
+      }
     }
   };
 
-  // Sidebar toggle function
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
   };
@@ -161,8 +236,7 @@ const MainPage = () => {
   };
 
   const handleVoiceInput = () => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech Recognition not supported");
       return;
@@ -200,21 +274,24 @@ const MainPage = () => {
   const startNewChat = () => {
     setChat([]);
     setActiveChat(null);
-    addBotMessage(
-      "Hello! I'm your Alice AI assistant. What would you like to discuss?"
-    );
+    setChatTitle("New Chat");
+    addBotMessage("Hello! I'm your Alice AI assistant. What would you like to discuss?");
   };
 
   const loadChat = (chatId) => {
     setActiveChat(chatId);
+    const selectedChat = chatHistory.find((c) => c.id === chatId);
+    setChatTitle(selectedChat?.title || "Chat");
     setChat([
-      { from: "bot", text: `Loading chat ${chatId}...`, timestamp: new Date() },
+      { id: Date.now(), from: "bot", text: `Loading chat ${chatId}...`, timestamp: new Date() },
       {
+        id: Date.now() + 1,
         from: "user",
         text: "Sample message from this conversation",
         timestamp: new Date(Date.now() - 3600000),
       },
       {
+        id: Date.now() + 2,
         from: "bot",
         text: "Sample response from the assistant",
         timestamp: new Date(Date.now() - 3500000),
@@ -222,28 +299,129 @@ const MainPage = () => {
     ]);
   };
 
+  const handleEditMessage = (message) => {
+    setEditingMessageId(message.id);
+    setEditText(message.text);
+    setMsg(message.text);
+    inputRef.current?.focus();
+  };
 
+  const handleEditSubmit = () => {
+    if (!editText.trim()) return;
+    setChat((prev) =>
+      prev.map((msg) =>
+        msg.id === editingMessageId ? { ...msg, text: editText, timestamp: new Date() } : msg
+      )
+    );
+    setEditingMessageId(null);
+    setEditText("");
+    setMsg("");
+    inputRef.current?.focus();
+  };
+
+  const handleDeleteMessage = (messageId) => {
+    setChat((prev) => prev.filter((msg) => msg.id !== messageId));
+  };
+
+  const handleAddReaction = (messageId, emoji) => {
+    setChat((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId
+          ? { ...msg, reactions: [...(msg.reactions || []), emoji] }
+          : msg
+      )
+    );
+  };
+
+  const toggleSettingsModal = () => {
+    setShowSettings((prev) => !prev);
+  };
 
   useEffect(() => {
     const focusInput = () => {
-      inputRef.current?.focus();
+      if (!showSettings && !showEmojiPicker) inputRef.current?.focus();
     };
 
-    // Initial focus
     focusInput();
-
-    // Refocus on blur
     const inputElement = inputRef.current;
     inputElement.addEventListener("blur", focusInput);
 
     return () => {
       inputElement.removeEventListener("blur", focusInput);
     };
-  }, []);
+  }, [showSettings, showEmojiPicker]);
 
+  const SettingsModal = ({ onClose }) => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50"
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+        className="bg-gradient-to-br from-[#4C3B8B] to-[#6B46C1] rounded-xl p-6 w-full max-w-md text-white shadow-2xl backdrop-blur-md bg-opacity-80"
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Settings</h2>
+          <button onClick={onClose} className="p-2 hover:bg-[#5a47a5] rounded-full">
+            <FiX size={24} />
+          </button>
+        </div>
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium">Chat Title</label>
+            <input
+              type="text"
+              value={chatTitle}
+              onChange={(e) => {
+                setChatTitle(e.target.value);
+                if (activeChat) {
+                  setChatHistory((prev) =>
+                    prev.map((chat) =>
+                      chat.id === activeChat ? { ...chat, title: e.target.value } : chat
+                    )
+                  );
+                }
+              }}
+              className="w-full p-3 rounded-md bg-[#5a47a5] text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#7B54D3] transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Theme</label>
+            <select
+              className="w-full p-3 rounded-md bg-[#5a47a5] text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#7B54D3] transition-colors"
+              onChange={(e) => document.documentElement.classList.toggle('dark', e.target.value === 'dark')}
+            >
+              <option value="dark">Dark</option>
+              <option value="light">Light</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Message Font Size</label>
+            <select
+              className="w-full p-3 rounded-md bg-[#5a47a5] text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#7B54D3] transition-colors"
+            >
+              <option value="small">Small</option>
+              <option value="medium">Medium</option>
+              <option value="large">Large</option>
+            </select>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-full p-3 bg-[#7B54D3] hover:bg-[#6B46C1] rounded-md text-white font-semibold transition-colors"
+          >
+            Save
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
 
   return (
-    <div className="h-screen w-screen flex flex-row bg-[#282828] text-[#2D3748] overflow-hidden relative">
+    <div className="h-screen w-screen flex flex-row bg-gradient-to-b from-[#282828] to-[#1f1f1f] text-[#f0f0ea] overflow-hidden relative">
       {/* Overlay */}
       <AnimatePresence>
         {isMobileSidebarOpen && (
@@ -251,7 +429,7 @@ const MainPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-20 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-60 z-20 lg:hidden"
             onClick={toggleMobileSidebar}
           />
         )}
@@ -260,8 +438,8 @@ const MainPage = () => {
       {/* Sidebar - desktop */}
       <motion.div
         className={`hidden lg:flex h-full ${
-          isCollapsed ? "w-20" : "w-64"
-        } flex-shrink-0 bg-[#4C3B8B] transition-all duration-300`}
+          isCollapsed ? "w-20" : "w-72"
+        } flex-shrink-0 transition-all duration-300`}
         animate={{ x: 0 }}
       >
         <Sidebar
@@ -284,7 +462,7 @@ const MainPage = () => {
             animate={{ x: 0 }}
             exit={{ x: -300 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed left-0 top-0 bottom-0 w-64 z-30 bg-[#4C3B8B] lg:hidden"
+            className="fixed left-0 top-0 bottom-0 w-72 z-30 lg:hidden"
           >
             <Sidebar
               isCollapsed={false}
@@ -303,129 +481,238 @@ const MainPage = () => {
       {/* Main */}
       <div className="flex-1 flex flex-col h-full overflow-hidden">
         <Header
-          style={{ backgroundColor: "#4C3B8B", color: "#FFFFFF" }}
           onMenuClick={toggleMobileSidebar}
           onSidebarToggle={toggleSidebar}
-          title={
-            activeChat
-              ? chatHistory.find((c) => c.id === activeChat)?.title
-              : "New Chat"
-          }
-          isSidebarCollapsed={isCollapsed} // Optional: pass sidebar collapsed state if needed in Header
+          title={chatTitle}
+          isSidebarCollapsed={isCollapsed}
         />
 
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div
-            className="flex-1 overflow-y-auto p-4 md:p-6 bg-gradient-to-b from-[#282828] to-[#282828]
-"
-          >
-            <div className="max-w-3xl mx-auto w-full space-y-4">
-              <AnimatePresence>
-                {chat.length === 0 && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center py-12"
-                  >
-                    <div className="text-3xl font-bold text-[#4C3B8B] mb-4">
-                      Alice AI Assistant
-                    </div>
-                    <div className="text-gray-600 max-w-md mx-auto">
-                      Ask me anything or start a new conversation.
-                    </div>
-                  </motion.div>
-                )}
-
-                {chat.map((msg, i) => (
-                  <ChatBubble
-                    key={i}
-                    message={msg}
-                    isConsecutive={i > 0 && chat[i - 1].from === msg.from}
-                  />
-                ))}
-
-                {isTyping && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex justify-end items-center space-x-2"
-                  >
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 rounded-full bg-[#4C3B8B] animate-bounce" />
-                      <div
-                        className="w-2 h-2 rounded-full bg-[#4C3B8B] animate-bounce"
-                        style={{ animationDelay: "150ms" }}
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+          {connectionError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="absolute top-0 left-0 right-0 bg-red-500/80 text-white text-center p-2 z-10 backdrop-blur-sm"
+            >
+              {connectionError}
+              <button
+                onClick={connectWebSocket}
+                className="ml-2 underline"
+                aria-label="Retry WebSocket connection"
+              >
+                Retry
+              </button>
+            </motion.div>
+          )}
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gradient-to-b from-[#282828] to-[#1f1f1f]">
+            <ErrorBoundary>
+              <div className="max-w-4xl mx-auto w-full space-y-4">
+                <AnimatePresence>
+                  {isLoading && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="text-center py-16"
+                    >
+                      <div className="flex justify-center space-x-2">
+                        <motion.div
+                          className="w-3 h-3 rounded-full bg-[#7B54D3]"
+                          animate={{ y: [-4, 4, -4] }}
+                          transition={{ repeat: Infinity, duration: 0.6 }}
+                        />
+                        <motion.div
+                          className="w-3 h-3 rounded-full bg-[#7B54D3]"
+                          animate={{ y: [-4, 4, -4] }}
+                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }}
+                        />
+                        <motion.div
+                          className="w-3 h-3 rounded-full bg-[#7B54D3]"
+                          animate={{ y: [-4, 4, -4] }}
+                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }}
+                        />
+                      </div>
+                      <div className="text-gray-400 mt-4">Connecting...</div>
+                    </motion.div>
+                  )}
+                  {!isLoading && chat.length === 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.4 }}
+                      className="text-center py-16 bg-[#2a2a2a]/50 backdrop-blur-md rounded-xl shadow-lg"
+                    >
+                      <img
+                        src="https://img.freepik.com/free-vector/hand-drawn-flat-design-anarchy-symbol_23-2149244363.jpg?semt=ais_hybrid&w=740"
+                        alt="Alice AI Logo"
+                        className="w-16 h-16 mx-auto mb-4 rounded-full shadow-md"
                       />
-                      <div
-                        className="w-2 h-2 rounded-full bg-[#4C3B8B] animate-bounce"
-                        style={{ animationDelay: "300ms" }}
+                      <div className="text-4xl font-bold text-[#7B54D3] mb-4">Alice AI Assistant</div>
+                      <div className="text-gray-400 max-w-md mx-auto text-lg">
+                        Start a new conversation or select one from the sidebar.
+                      </div>
+                    </motion.div>
+                  )}
+                  {!isLoading &&
+                    chat.map((msg, i) => (
+                      <ChatBubble
+                        key={msg.id}
+                        message={msg}
+                        isConsecutive={i > 0 && chat[i - 1].from === msg.from}
+                        onEdit={handleEditMessage}
+                        onDelete={handleDeleteMessage}
+                        onAddReaction={handleAddReaction}
                       />
-                    </div>
-                    <div className="text-sm text-gray-500 italic">
-                       is Typing...
-                    </div>
-                       
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              <div ref={messagesEndRef} />
-            </div>
+                    ))}
+                  {isTyping && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="flex justify-start items-center space-x-3 p-4 bg-[#2a2a2a]/50 rounded-lg backdrop-blur-sm"
+                    >
+                      <img
+                        src="https://img.freepik.com/free-vector/hand-drawn-flat-design-anarchy-symbol_23-2149244363.jpg?semt=ais_hybrid&w=740"
+                        alt="Alice AI"
+                        className="w-6 h-6 rounded-full"
+                      />
+                      <div className="flex space-x-2">
+                        <motion.div
+                          className="w-2 h-2 rounded-full bg-[#7B54D3]"
+                          animate={{ y: [-4, 4, -4] }}
+                          transition={{ repeat: Infinity, duration: 0.6 }}
+                        />
+                        <motion.div
+                          className="w-2 h-2 rounded-full bg-[#7B54D3]"
+                          animate={{ y: [-4, 4, -4] }}
+                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }}
+                        />
+                        <motion.div
+                          className="w-2 h-2 rounded-full bg-[#7B54D3]"
+                          animate={{ y: [-4, 4, -4] }}
+                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }}
+                        />
+                      </div>
+                      <div className="text-sm text-gray-400 italic">Alice is typing...</div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <div ref={messagesEndRef} />
+              </div>
+            </ErrorBoundary>
           </div>
 
           {/* Input area */}
-          <div className=" border-gray-700 bg-gradient-to-b from-[#282828] to-[#282828] p-4 flex items-center space-x-3 max-w-3xl mx-auto w-full">
-            <textarea
-              ref={inputRef}
-              className="flex-grow resize-none rounded-md border border-gray-600 bg-[#1f1f1f] text-white p-2 focus:outline-none focus:ring-2 focus:ring-[#4C3B8B]"
-              rows={1}
-              placeholder="Type your message..."
-              value={msg}
-              onChange={(e) => {
-                setMsg(e.target.value);
-                stopListening();
-              }}
-              onKeyDown={handleKeyPress}
-              aria-label="Message input"
-            />
-
-            <label
-              htmlFor="file-upload"
-              className="cursor-pointer p-2 rounded hover:bg-[#3a3a3a] transition-colors"
-              title="Attach a file"
-            >
-              <FiPaperclip size={22} className="text-[#4C3B8B]" />
-            </label>
-            <input
-              type="file"
-              id="file-upload"
-              className="hidden"
-              onChange={handleFileUpload}
-            />
-
-            <button
-              onClick={handleVoiceInput}
-              className={`p-2 rounded-full transition-colors ${
-                isListening
-                  ? "bg-[#4C3B8B] text-white"
-                  : "bg-gray-700 text-gray-100 hover:bg-gray-600"
-              }`}
-              aria-label={isListening ? "Listening..." : "Start voice input"}
-              disabled={isTyping}
-            >
-              <FiMic size={22} />
-            </button>
-            <button
-              onClick={() => sendMessage()}
-              className="p-2 rounded-full bg-[#4C3B8B] text-white hover:bg-[#5a47a5] transition-colors"
-              aria-label="Send message"
-              disabled={isTyping || !msg.trim()}
-            >
-              <FiSend size={22} />
-            </button>
+          <div className="border-t border-gray-700 bg-gradient-to-b from-[#282828] to-[#1f1f1f] p-2 sm:p-3 md:p-4 flex flex-col max-w-4xl mx-auto w-full backdrop-blur-md bg-opacity-90 sticky bottom-0 z-10 rounded-3xl">
+            <div className="flex items-center space-x-1 sm:space-x-2">
+              <button
+                onClick={toggleSettingsModal}
+                className="p-1 sm:p-2 rounded-full bg-[#5a47a5]/90 hover:bg-[#6B46C1] transition-colors focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm min-w-[32px] sm:min-w-[40px]"
+                aria-label="Open settings"
+              >
+                <FiSettings size={18} className="sm:w-6 sm:h-6" />
+              </button>
+              <div className="relative flex-grow">
+                <textarea
+                  ref={inputRef}
+                  className="w-full resize-none rounded-xl border border-gray-600 bg-[#2a2a2a]/90 text-white p-2 sm:p-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#7B54D3] transition-colors shadow-md backdrop-blur-sm"
+                  rows={editingMessageId ? 2 : 1}
+                  style={{ minHeight: "40px", maxHeight: "100px", fontSize: "inherit" }}
+                  placeholder={editingMessageId ? "Edit your message..." : "Type your message..."}
+                  value={msg}
+                  onChange={(e) => {
+                    setMsg(e.target.value);
+                    if (editingMessageId) setEditText(e.target.value);
+                    stopListening();
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`;
+                  }}
+                  onKeyDown={handleKeyPress}
+                  aria-label={editingMessageId ? "Edit message input" : "Message input"}
+                />
+                <button
+                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 p-1 sm:p-2 rounded-full hover:bg-[#5a47a5]/90 transition-colors"
+                  aria-label="Toggle emoji picker"
+                >
+                  <FiSmile size={16} className="sm:w-5 sm:h-5 text-[#7B54D3]" />
+                </button>
+              </div>
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer p-1 sm:p-2 rounded-full hover:bg-[#5a47a5]/90 transition-colors focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm min-w-[32px] sm:min-w-[40px]"
+                title="Attach a file"
+              >
+                <FiPaperclip size={18} className="sm:w-6 sm:h-6 text-[#7B54D3]" />
+              </label>
+              <input
+                type="file"
+                id="file-upload"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+              <button
+                onClick={handleVoiceInput}
+                className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${
+                  isListening
+                    ? "bg-[#7B54D3] text-white"
+                    : "bg-[#5a47a5]/90 text-gray-100 hover:bg-[#6B46C1]"
+                } focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm`}
+                aria-label={isListening ? "Listening..." : "Start voice input"}
+                disabled={isTyping}
+              >
+                <FiMic size={18} className="sm:w-6 sm:h-6" />
+              </button>
+              <button
+                onClick={editingMessageId ? handleEditSubmit : () => sendMessage()}
+                className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${
+                  isTyping || !msg.trim()
+                    ? "bg-gray-600/90 text-gray-400 cursor-not-allowed"
+                    : "bg-[#7B54D3] text-white hover:bg-[#6B46C1]"
+                } focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm`}
+                aria-label={editingMessageId ? "Submit edited message" : "Send message"}
+                disabled={isTyping || !msg.trim()}
+              >
+                <FiSend size={18} className="sm:w-6 sm:h-6" />
+              </button>
+              {/* <div className="p-2 sm:p-2 min-w-[32px] sm:min-w-[40px]">
+                {connectionStatus === "connected" ? (
+                  <FiWifi size={18} className="sm:w-6 sm:h-6 text-green-400" title="Connected" />
+                ) : (
+                  <FiWifiOff size={18} className="sm:w-6 sm:h-6 text-red-400" title="Disconnected" />
+                )}
+              </div> */}
+            </div>
+            <AnimatePresence>
+              {showEmojiPicker && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mt-1 sm:mt-2 p-2 sm:p-3 bg-[#5a47a5]/90 rounded-lg flex flex-wrap gap-1 sm:gap-2 backdrop-blur-sm shadow-md"
+                >
+                  {["👍", "❤️", "😂", "😮", "😢"].map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => {
+                        setMsg((prev) => prev + emoji);
+                        setShowEmojiPicker(false);
+                      }}
+                      className="p-1 sm:p-2 text-base sm:text-lg hover:bg-[#6B46C1] rounded-md transition-colors"
+                      aria-label={`Add ${emoji} emoji`}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
-      {showSettings && <SettingsModal onClose={toggleSettingsModal} />}
+      <AnimatePresence>
+        {showSettings && <SettingsModal onClose={toggleSettingsModal} />}
+      </AnimatePresence>
     </div>
   );
 };

@@ -1,139 +1,135 @@
-import { useState, useEffect } from "react";
-import { FiMenu, FiX, FiPlus, FiUser, FiSettings } from "react-icons/fi";
-import aliceLogo from "../../assets/alicelogo.png";
+import React, { useState } from 'react';
+import { FiPlus, FiChevronLeft, FiChevronRight, FiX, FiSearch } from 'react-icons/fi';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const Sidebar = ({ isCollapsed, toggleSidebar }) => {
-  const [activeItem, setActiveItem] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // TODO: Replace with actual logic for starting a new chat
-  const startNewChat = () => {
-    // For now, just resetting activeItem or some state could work
-    setActiveItem("newChat");
-  };
-
-  const handleClick = (item) => {
-    setActiveItem(item);
-  };
-
-  const baseButtonClasses =
-    "flex items-center w-full p-3 text-left transition-all duration-200 border-b border-gray-700";
-  const collapsedButtonClasses = isCollapsed ? "justify-center" : "px-4";
-
-  const getButtonStyle = (item) =>
-    activeItem === item ? "bg-[#2a2a2a]" : "hover:bg-[#2a2a2a]";
-
-  const gradientText =
-    "text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-300";
-
-  // Collapse on screen resize (mobile)
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 640;
-      setIsMobile(mobile);
-      if (mobile && !isCollapsed) {
-        toggleSidebar(); // collapse if open on mobile
-      }
-    };
-    handleResize(); // run on mount
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [isCollapsed, toggleSidebar]);
+const Sidebar = ({
+  isCollapsed,
+  toggleSidebar,
+  recentChats,
+  activeChat,
+  onNewChat,
+  onSelectChat,
+  closeMobileSidebar,
+  isMobile,
+}) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredChats = recentChats.filter(
+    (chat) =>
+      chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <>
-      {/* Overlay for mobile when sidebar is open */}
-      {isMobile && !isCollapsed && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={toggleSidebar}
-          aria-hidden="true"
-        />
-      )}
-
-      <div
-        className={`fixed top-0 left-0 z-50 h-full bg-[#1f1e1d] transition-transform duration-300 ease-in-out 
-        ${isCollapsed ? "-translate-x-full" : "translate-x-0"} 
-        sm:translate-x-0 sm:static sm:flex 
-        w-64 border-r border-gray-700 flex flex-col`}
-      >
-        {/* Header */}
-        <div className="p-3 border-b border-gray-700 flex justify-between items-center bg-[#1f1e1d]/90">
-          {!isCollapsed && (
-            <img
-              src={aliceLogo}
-              alt="Alice Ai"
-              style={{ height: "50px", width: "200px" }}
-            />
-          )}
+    <div
+      className={`flex flex-col h-full ${
+        isCollapsed ? 'w-20' : 'w-72'
+      } bg-black text-white transition-all duration-300 ${
+        isMobile ? 'fixed inset-y-0 left-0 z-30 shadow-2xl' : ''
+      }`}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-600">
+        {!isCollapsed && (
+          <h2 className="text-xl font-bold tracking-tight">Conversations</h2>
+        )}
+        {isMobile ? (
+          <button
+            onClick={closeMobileSidebar}
+            className="p-2 rounded-full hover:bg-[#5a47a5] transition-colors focus:outline-none focus:ring-2 focus:ring-[#7B54D3]"
+            aria-label="Close sidebar"
+          >
+            <FiX size={26} />
+          </button>
+        ) : (
           <button
             onClick={toggleSidebar}
-            className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-[#2a2a2a] transition-all duration-200"
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="p-2 rounded-full hover:bg-[#5a47a5] transition-colors focus:outline-none focus:ring-2 focus:ring-[#7B54D3]"
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {isCollapsed ? (
-              <FiMenu
-                size={20}
-                className="hover:scale-110 transition-transform"
-                aria-hidden="true"
-              />
-            ) : (
-              <FiX
-                size={20}
-                className="hover:scale-110 transition-transform"
-                aria-hidden="true"
-              />
-            )}
+            {isCollapsed ? <FiChevronRight size={26} /> : <FiChevronLeft size={26} />}
           </button>
-        </div>
-
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto">
-          <button
-            className={`${baseButtonClasses} ${collapsedButtonClasses} ${getButtonStyle(
-              "newChat"
-            )}`}
-            onClick={startNewChat}
-            aria-current={activeItem === "newChat" ? "page" : undefined}
-          >
-            <FiPlus className="text-gray-300" size={18} />
-            {!isCollapsed && (
-              <span className={`ml-3 font-medium ${gradientText}`}>
-                New Chat
-              </span>
-            )}
-          </button>
-          {/* Add more buttons or chat list items here */}
-        </div>
-
-        {/* Bottom Buttons */}
-        <div className="border-t border-gray-700 p-2 bg-[#1f1e1d]/90">
-          {[
-            { key: "settings", icon: FiSettings, label: "Settings" },
-            { key: "login", icon: FiUser, label: "Akash" },
-          ].map(({ key, icon: Icon, label }) => {
-            const isActive = activeItem === key;
-            return (
-              <button
-                key={key}
-                className={`flex items-center w-full p-2 rounded-md ${
-                  isActive ? "bg-[#2a2a2a]" : "hover:bg-[#2a2a2a]"
-                } ${isCollapsed ? "justify-center" : ""}`}
-                onClick={() => handleClick(key)}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <Icon size={16} className="text-gray-300" />
-                {!isCollapsed && (
-                  <span className={`ml-3 text-sm font-medium ${gradientText}`}>
-                    {label}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
+        )}
       </div>
-    </>
+
+      {/* Search Bar */}
+      {!isCollapsed && (
+        <div className="p-4">
+          <div className="relative">
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search chats..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 rounded-md bg-[#5a47a5] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7B54D3] transition-colors"
+              aria-label="Search conversations"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* New Chat Button */}
+      <button
+        onClick={onNewChat}
+        className={`flex items-center ${
+          isCollapsed ? 'justify-center' : 'justify-start'
+        } p-4 hover:bg-[#5a47a5] transition-colors focus:outline-none focus:ring-2 focus:ring-[#7B54D3]`}
+        aria-label="Start new chat"
+      >
+        <FiPlus size={22} className={isCollapsed ? '' : 'mr-3'} />
+        {!isCollapsed && <span className="font-semibold">New Conversation</span>}
+      </button>
+
+      {/* Chat History */}
+      <div className="flex-1 overflow-y-auto px-2 ">
+        <AnimatePresence>
+          {filteredChats.length === 0 && !isCollapsed && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="p-4 text-gray-400 text-center "
+            >
+              No chats found
+            </motion.div>
+          )}
+          {filteredChats.map((chat) => (
+            <motion.div
+              key={chat.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => onSelectChat(chat.id)}
+              className={`p-4 mx-2 rounded-lg border-b border-gray-600 cursor-pointer hover:bg-[#5a47a5] transition-colors focus:outline-none focus:ring-2 focus:ring-[#7B54D3] ${
+                activeChat === chat.id ? 'bg-[#5a47a5]' : ''
+              }`}
+              role="button"
+              aria-label={`Select chat: ${chat.title}`}
+            >
+              {isCollapsed ? (
+                <div className="text-center text-lg font-bold" title={chat.title}>
+                  {chat.title.charAt(0).toUpperCase()}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <div className="font-semibold truncate text-lg">{chat.title}</div>
+                  <div className="text-sm text-gray-300 truncate">{chat.lastMessage}</div>
+                  <div className="text-xs text-gray-400">
+                    {new Date(chat.timestamp).toLocaleString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+    </div>
   );
 };
 
