@@ -41,7 +41,7 @@ const Header = ({ onMenuClick, onSidebarToggle, title, isSidebarCollapsed }) => 
   };
 
   return (
-    <header className="flex items-center justify-between p-4 bg-white/90 dark:bg-[#282828] text-black dark:text-[#ECECF1] shadow-lg border-b border-[#f8f1f1] dark:border-[#343434]">
+    <header className="flex items-center justify-between px-4 bg-white/90 dark:bg-[#282828] text-black dark:text-[#ECECF1] shadow-lg border-b border-[#f8f1f1] dark:border-[#343434]">
       {/* Mobile Menu Button */}
       <button
         onClick={onMenuClick}
