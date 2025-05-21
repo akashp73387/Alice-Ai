@@ -36,7 +36,7 @@ const Header = ({ onMenuClick, onSidebarToggle, title, isSidebarCollapsed }) => 
 
 
   return (
-    <header className="flex items-center justify-between p-4 bg-white/90 dark:bg-[#282828] text-black dark:text-[#ECECF1] shadow-lg">
+    <header className="flex items-center justify-between p-4 bg-white/90 dark:bg-[#282828] text-black dark:text-[#ECECF1] shadow-lg border-b border-[#f8f1f1] dark:border-[#343434]">
       {/* Mobile Menu Button */}
       <button
         onClick={onMenuClick}
@@ -55,10 +55,13 @@ const Header = ({ onMenuClick, onSidebarToggle, title, isSidebarCollapsed }) => 
         <FiMenu size={26} />
       </button>
 
+
       {/* Title */}
       <h1 className="text-xl md:text-2xl font-bold truncate flex-1 text-center text-black dark:text-[#ECECF1]">
         Alice Ai
       </h1>
+
+
 
       {/* Controls */}
       <div className="relative flex items-center space-x-3">
