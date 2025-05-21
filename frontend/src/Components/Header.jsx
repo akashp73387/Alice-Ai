@@ -61,22 +61,8 @@ const Header = ({ onMenuClick, onSidebarToggle, title, isSidebarCollapsed }) => 
         Alice Ai
       </h1>
 
-
-
       {/* Controls */}
       <div className="relative flex items-center space-x-3">
-        {/* Notification Bell */}
-        <button
-          className="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#3a3a3a] transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400"
-          aria-label={`Notifications (${notifications} new)`}
-        >
-          <FiBell size={24} />
-          {notifications > 0 && (
-            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-              {notifications}
-            </span>
-          )}
-        </button>
 
         {/* Theme Toggle */}
         <button

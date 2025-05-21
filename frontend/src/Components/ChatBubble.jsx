@@ -74,7 +74,7 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
             <div className="whitespace-pre-wrap break-words text-sm md:text-base">
               {message.text}
             </div>
-            <div className={`text-xs mt-1 text-right text-white dark:text-black ${currentStyle.time}`}>
+            <div className={`text-xs mt-1 text-right ${currentStyle.time}`}>
               {formatTime(message.timestamp)}
             </div>
 
