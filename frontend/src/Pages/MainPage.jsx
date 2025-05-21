@@ -12,7 +12,7 @@ class ErrorBoundary extends React.Component {
   static getDerivedStateFromError(error) {
     return { hasError: true, error };
   }
-
+  // dark bg : #282828, dark text : #ECECF1
   render() {
     if (this.state.hasError) {
       return (
@@ -362,11 +362,12 @@ const MainPage = () => {
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
-        className="bg-gradient-to-br from-[#4C3B8B] to-[#6B46C1] rounded-xl p-6 w-full max-w-md text-white shadow-2xl backdrop-blur-md bg-opacity-80"
+        className="rounded-xl p-6 w-full max-w-md shadow-2xl backdrop-blur-md bg-opacity-80
+                   bg-white text-black dark:bg-gradient-to-br dark:from-[#4C3B8B] dark:to-[#6B46C1] dark:text-white"
       >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">Settings</h2>
-          <button onClick={onClose} className="p-2 hover:bg-[#5a47a5] rounded-full">
+          <button onClick={onClose} className="p-2 hover:bg-gray-200 dark:hover:bg-[#5a47a5] rounded-full">
             <FiX size={24} />
           </button>
         </div>
@@ -386,13 +387,17 @@ const MainPage = () => {
                   );
                 }
               }}
-              className="w-full p-3 rounded-md bg-[#5a47a5] text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#7B54D3] transition-colors"
+              className="w-full p-3 rounded-md border focus:outline-none transition-colors
+                         bg-gray-100 text-black border-gray-300 focus:ring-2 focus:ring-indigo-400
+                         dark:bg-[#5a47a5] dark:text-white dark:border-gray-600 dark:focus:ring-[#7B54D3]"
             />
           </div>
           <div>
             <label className="block text-sm font-medium">Theme</label>
             <select
-              className="w-full p-3 rounded-md bg-[#5a47a5] text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#7B54D3] transition-colors"
+              className="w-full p-3 rounded-md border focus:outline-none transition-colors
+                         bg-gray-100 text-black border-gray-300 focus:ring-2 focus:ring-indigo-400
+                         dark:bg-[#5a47a5] dark:text-white dark:border-gray-600 dark:focus:ring-[#7B54D3]"
               onChange={(e) => document.documentElement.classList.toggle('dark', e.target.value === 'dark')}
             >
               <option value="dark">Dark</option>
@@ -402,7 +407,9 @@ const MainPage = () => {
           <div>
             <label className="block text-sm font-medium">Message Font Size</label>
             <select
-              className="w-full p-3 rounded-md bg-[#5a47a5] text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-[#7B54D3] transition-colors"
+              className="w-full p-3 rounded-md border focus:outline-none transition-colors
+                         bg-gray-100 text-black border-gray-300 focus:ring-2 focus:ring-indigo-400
+                         dark:bg-[#5a47a5] dark:text-white dark:border-gray-600 dark:focus:ring-[#7B54D3]"
             >
               <option value="small">Small</option>
               <option value="medium">Medium</option>
@@ -411,7 +418,9 @@ const MainPage = () => {
           </div>
           <button
             onClick={onClose}
-            className="w-full p-3 bg-[#7B54D3] hover:bg-[#6B46C1] rounded-md text-white font-semibold transition-colors"
+            className="w-full p-3 font-semibold rounded-md transition-colors
+                       bg-indigo-600 text-white hover:bg-indigo-700
+                       dark:bg-[#7B54D3] dark:hover:bg-[#6B46C1]"
           >
             Save
           </button>
@@ -421,7 +430,10 @@ const MainPage = () => {
   );
 
   return (
-    <div className="h-screen w-screen flex flex-row bg-gradient-to-b from-[#282828] to-[#1f1f1f] text-[#f0f0ea] overflow-hidden relative">
+    <div className="h-screen w-screen flex flex-row 
+  bg-gradient-to-b from-[#ffffff] to-[#e5e5e5] text-black 
+  overflow-hidden relative 
+  dark:from-[#282828] dark:to-[#1f1f1f] dark:text-[#f0f0ea]">
       {/* Overlay */}
       <AnimatePresence>
         {isMobileSidebarOpen && (
@@ -429,7 +441,7 @@ const MainPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-60 z-20 lg:hidden"
+            className="fixed inset-0 bg-black bg-opacity-60 z-20 lg:hidden dark:bg-opacity-80 dark:bg-[#000000]"
             onClick={toggleMobileSidebar}
           />
         )}
@@ -437,9 +449,8 @@ const MainPage = () => {
 
       {/* Sidebar - desktop */}
       <motion.div
-        className={`hidden lg:flex h-full ${
-          isCollapsed ? "w-20" : "w-72"
-        } flex-shrink-0 transition-all duration-300`}
+        className={`hidden lg:flex h-full ${isCollapsed ? "w-20" : "w-72"
+          } flex-shrink-0 transition-all duration-300`}
         animate={{ x: 0 }}
       >
         <Sidebar
@@ -492,7 +503,7 @@ const MainPage = () => {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="absolute top-0 left-0 right-0 bg-red-500/80 text-white text-center p-2 z-10 backdrop-blur-sm"
+              className="absolute top-0 left-0 right-0 bg-red-500/80 text-white text-center p-2 z-10 backdrop-blur-sm dark:bg-red-700/90 dark:text-gray-100"
             >
               {connectionError}
               <button
@@ -653,11 +664,10 @@ const MainPage = () => {
               />
               <button
                 onClick={handleVoiceInput}
-                className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${
-                  isListening
-                    ? "bg-[#7B54D3] text-white"
-                    : "bg-[#5a47a5]/90 text-gray-100 hover:bg-[#6B46C1]"
-                } focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm`}
+                className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${isListening
+                  ? "bg-[#7B54D3] text-white"
+                  : "bg-[#5a47a5]/90 text-gray-100 hover:bg-[#6B46C1]"
+                  } focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm`}
                 aria-label={isListening ? "Listening..." : "Start voice input"}
                 disabled={isTyping}
               >
@@ -665,11 +675,10 @@ const MainPage = () => {
               </button>
               <button
                 onClick={editingMessageId ? handleEditSubmit : () => sendMessage()}
-                className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${
-                  isTyping || !msg.trim()
-                    ? "bg-gray-600/90 text-gray-400 cursor-not-allowed"
-                    : "bg-[#7B54D3] text-white hover:bg-[#6B46C1]"
-                } focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm`}
+                className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${isTyping || !msg.trim()
+                  ? "bg-gray-600/90 text-gray-400 cursor-not-allowed"
+                  : "bg-[#7B54D3] text-white hover:bg-[#6B46C1]"
+                  } focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm`}
                 aria-label={editingMessageId ? "Submit edited message" : "Send message"}
                 disabled={isTyping || !msg.trim()}
               >

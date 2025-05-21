@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiEdit, FiTrash } from "react-icons/fi";
+import useTheme from "../hooks/theme";
 
 const formatTime = (timestamp) => {
   return new Date(timestamp).toLocaleTimeString([], {
@@ -34,6 +35,8 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
     }
   };
 
+  const { theme, setTheme, toggleTheme } = useTheme();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -54,7 +57,7 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
               alt={message.from === "bot" ? "Bot Logo" : "User Avatar"}
               className="w-8 h-8 rounded-full object-cover shadow-md"
             />
-            <span className="text-sm font-medium text-gray-400">
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
               {message.from === "bot" ? "Alice AI" : "You"}
             </span>
           </div>
@@ -69,7 +72,7 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
             <div className="whitespace-pre-wrap break-words text-sm md:text-base">
               {message.text}
             </div>
-            <div className={`text-xs mt-1 text-right ${currentStyle.time}`}>
+            <div className={`text-xs mt-1 text-right text-gray-500 dark:text-gray-300 ${currentStyle.time}`}>
               {formatTime(message.timestamp)}
             </div>
 
@@ -77,14 +80,14 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
               <div className="absolute top-2 right-2 hidden group-hover:flex space-x-2">
                 <button
                   onClick={() => onEdit(message)}
-                  className="p-1 hover:bg-[#5a47a5]/80 rounded-full transition-colors backdrop-blur-sm"
+                  className="p-1 hover:bg-violet-300 dark:hover:bg-[#5a47a5]/80 rounded-full transition-colors backdrop-blur-sm"
                   aria-label="Edit message"
                 >
                   <FiEdit size={16} />
                 </button>
                 <button
                   onClick={() => onDelete(message.id)}
-                  className="p-1 hover:bg-[#5a47a5]/80 rounded-full transition-colors backdrop-blur-sm"
+                  className="p-1 hover:bg-red-300 dark:hover:bg-[#5a47a5]/80 rounded-full transition-colors backdrop-blur-sm"
                   aria-label="Delete message"
                 >
                   <FiTrash size={16} />
@@ -102,7 +105,7 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className="text-sm bg-[#5a47a5]/50 px-2 py-1 rounded-full shadow-sm"
+                className="text-sm bg-purple-200 dark:bg-[#5a47a5]/50 px-2 py-1 rounded-full shadow-sm"
               >
                 {reaction}
               </motion.span>
@@ -117,7 +120,7 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
               whileHover={{ scale: 1.2 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => onAddReaction(message.id, emoji)}
-              className="text-sm p-1 hover:bg-[#5a47a5]/50 rounded-full transition-colors backdrop-blur-sm"
+              className="text-sm p-1 hover:bg-purple-300 dark:hover:bg-[#5a47a5]/50 rounded-full transition-colors backdrop-blur-sm"
               aria-label={`Add ${emoji} reaction`}
             >
               {emoji}
@@ -132,18 +135,18 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="absolute right-4 top-0 bg-[#5a47a5]/80 rounded-lg shadow-lg p-2 z-10 backdrop-blur-md"
+            className="absolute right-4 top-0 bg-white dark:bg-[#5a47a5]/80 rounded-lg shadow-lg p-2 z-10 backdrop-blur-md"
             onClick={() => setShowContextMenu(false)}
           >
             <button
               onClick={() => onEdit(message)}
-              className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#6B46C1] transition-colors"
+              className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-[#6B46C1] transition-colors"
             >
               <FiEdit className="mr-2" size={16} /> Edit
             </button>
             <button
               onClick={() => onDelete(message.id)}
-              className="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-[#6B46C1] transition-colors"
+              className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-[#6B46C1] transition-colors"
             >
               <FiTrash className="mr-2" size={16} /> Delete
             </button>
