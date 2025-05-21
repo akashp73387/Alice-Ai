@@ -41,7 +41,7 @@ const Header = ({ onMenuClick, onSidebarToggle, title, isSidebarCollapsed }) => 
   };
 
   return (
-    <header className="flex items-center justify-between px-2  bg-white/90 dark:bg-[#282828] text-black dark:text-[#ECECF1] shadow-lg">
+    <header className="flex items-center justify-between p-4 bg-white/90 dark:bg-[#282828] text-black dark:text-[#ECECF1] shadow-lg border-b border-[#f8f1f1] dark:border-[#343434]">
       {/* Mobile Menu Button */}
       <button
         onClick={onMenuClick}
@@ -72,18 +72,6 @@ const Header = ({ onMenuClick, onSidebarToggle, title, isSidebarCollapsed }) => 
 
       {/* Right Controls */}
       <div className="relative flex items-center space-x-3">
-        {/* Notifications */}
-        <button
-          className="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#3a3a3a] transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400"
-          aria-label={`Notifications (${notifications} new)`}
-        >
-          <FiBell size={24} />
-          {notifications > 0 && (
-            <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-              {notifications}
-            </span>
-          )}
-        </button>
 
         {/* Theme Toggle */}
         <button
