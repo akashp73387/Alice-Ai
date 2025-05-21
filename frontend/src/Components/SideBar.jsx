@@ -32,7 +32,7 @@ const Sidebar = ({
       <div className="flex items-center justify-between p-4 border-b border-gray-300 dark:border-gray-600 bg-white dark:bg-[#282828]">
         {!isCollapsed && (
           <h2 className="text-xl font-bold tracking-tight text-gray-800 dark:text-white">
-            Conversations
+            <span className='font-bold text-2xl tracking-wide'>Auto</span><span className=' text-purple-600 tracking-wide'>Intelli</span>
           </h2>
         )}
         {isMobile ? (

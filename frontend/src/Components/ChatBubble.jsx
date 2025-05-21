@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiEdit, FiTrash } from "react-icons/fi";
 import useTheme from "../hooks/theme";
+import alicedark from "../../assets/Alice-logo.png";
+// import alicelight from '../../assets/Alice-light.png';
 
 const formatTime = (timestamp) => {
   return new Date(timestamp).toLocaleTimeString([], {
@@ -10,7 +12,7 @@ const formatTime = (timestamp) => {
   });
 };
 
-const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction }) => {
+const ChatBubble = ({ message, isConsecutive, onEdit, onDelete }) => {
   const [showContextMenu, setShowContextMenu] = useState(false);
 
   const bubbleClasses = {
@@ -35,7 +37,7 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
     }
   };
 
-  const { theme, setTheme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
 
   return (
     <motion.div
@@ -51,7 +53,7 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
             <img
               src={
                 message.from === "bot"
-                  ? "https://img.freepik.com/free-vector/hand-drawn-flat-design-anarchy-symbol_23-2149244363.jpg?semt=ais_hybrid&w=740"
+                  ? alicedark
                   : "https://cdn-icons-png.flaticon.com/512/149/149071.png"
               }
               alt={message.from === "bot" ? "Bot Logo" : "User Avatar"}
@@ -97,36 +99,7 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
           </motion.div>
         </div>
 
-        {message.reactions?.length > 0 && (
-          <div className="flex gap-2 mt-2">
-            {message.reactions.map((reaction, index) => (
-              <motion.span
-                key={index}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 300 }}
-                className="text-sm bg-purple-200 dark:bg-[#5a47a5]/50 px-2 py-1 rounded-full shadow-sm"
-              >
-                {reaction}
-              </motion.span>
-            ))}
-          </div>
-        )}
-
-        <div className="flex gap-2 mt-2">
-          {["👍", "❤️"].map((emoji) => (
-            <motion.button
-              key={emoji}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => onAddReaction(message.id, emoji)}
-              className="text-sm p-1 hover:bg-purple-300 dark:hover:bg-[#5a47a5]/50 rounded-full transition-colors backdrop-blur-sm"
-              aria-label={`Add ${emoji} reaction`}
-            >
-              {emoji}
-            </motion.button>
-          ))}
-        </div>
+        {/* Removed reactions display and emoji reaction buttons */}
       </div>
 
       <AnimatePresence>
