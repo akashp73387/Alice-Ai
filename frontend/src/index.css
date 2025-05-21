@@ -1,39 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Hide scrollbar but keep scroll functionality */
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  .scrollbar-hide {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-
-  /* Light theme */
-.light {
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f3f4f6;
-  --color-text-primary: #111827;
-  --color-text-secondary: #4b5563;
-  --color-accent: #7c3aed;
-  --color-border: #e5e7eb;
-}
-
-/* Dark theme */
-.dark {
-  --color-bg-primary: #1f2937;
-  --color-bg-secondary: #111827;
-  --color-text-primary: #f9fafb;
-  --color-text-secondary: #d1d5db;
-  --color-accent: #8b5cf6;
-  --color-border: #374151;
-}
-
-/* Apply these variables to elements */
-body {
-  background-color: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
-}

@@ -449,8 +449,9 @@ const MainPage = () => {
 
       {/* Sidebar - desktop */}
       <motion.div
-        className={`hidden lg:flex h-full ${isCollapsed ? "w-20" : "w-72"
-          } flex-shrink-0 transition-all duration-300`}
+        className={`hidden lg:flex h-full ${
+          isCollapsed ? "w-20" : "w-72"
+        } flex-shrink-0 transition-all duration-300`}
         animate={{ x: 0 }}
       >
         <Sidebar
@@ -535,12 +536,20 @@ const MainPage = () => {
                         <motion.div
                           className="w-3 h-3 rounded-full bg-[#7B54D3]"
                           animate={{ y: [-4, 4, -4] }}
-                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 0.6,
+                            delay: 0.2,
+                          }}
                         />
                         <motion.div
                           className="w-3 h-3 rounded-full bg-[#7B54D3]"
                           animate={{ y: [-4, 4, -4] }}
-                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 0.6,
+                            delay: 0.4,
+                          }}
                         />
                       </div>
                       <div className="text-gray-400 mt-4">Connecting...</div>
@@ -558,7 +567,9 @@ const MainPage = () => {
                         alt="Alice AI Logo"
                         className="w-16 h-16 mx-auto mb-4 rounded-full shadow-md"
                       />
-                      <div className="text-4xl font-bold text-[#7B54D3] mb-4">Alice AI Assistant</div>
+                      <div className="text-4xl font-bold text-[#7B54D3] mb-4">
+                        Alice AI Assistant
+                      </div>
                       <div className="text-gray-400 max-w-md mx-auto text-lg">
                         Start a new conversation or select one from the sidebar.
                       </div>
@@ -596,15 +607,25 @@ const MainPage = () => {
                         <motion.div
                           className="w-2 h-2 rounded-full bg-[#7B54D3]"
                           animate={{ y: [-4, 4, -4] }}
-                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 0.6,
+                            delay: 0.2,
+                          }}
                         />
                         <motion.div
                           className="w-2 h-2 rounded-full bg-[#7B54D3]"
                           animate={{ y: [-4, 4, -4] }}
-                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 0.6,
+                            delay: 0.4,
+                          }}
                         />
                       </div>
-                      <div className="text-sm text-gray-400 italic">Alice is typing...</div>
+                      <div className="text-sm text-gray-400 italic">
+                        Alice is typing...
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -631,18 +652,31 @@ const MainPage = () => {
         focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500
         transition-colors shadow-md backdrop-blur-sm"
                   rows={editingMessageId ? 2 : 1}
-                  style={{ minHeight: "40px", maxHeight: "100px", fontSize: "inherit" }}
-                  placeholder={editingMessageId ? "Edit your message..." : "Type your message..."}
+                  style={{
+                    minHeight: "40px",
+                    maxHeight: "100px",
+                    fontSize: "inherit",
+                  }}
+                  placeholder={
+                    editingMessageId
+                      ? "Edit your message..."
+                      : "Type your message..."
+                  }
                   value={msg}
                   onChange={(e) => {
                     setMsg(e.target.value);
                     if (editingMessageId) setEditText(e.target.value);
                     stopListening();
                     e.target.style.height = "auto";
-                    e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`;
+                    e.target.style.height = `${Math.min(
+                      e.target.scrollHeight,
+                      100
+                    )}px`;
                   }}
                   onKeyDown={handleKeyPress}
-                  aria-label={editingMessageId ? "Edit message input" : "Message input"}
+                  aria-label={
+                    editingMessageId ? "Edit message input" : "Message input"
+                  }
                 />
               </div>
 
