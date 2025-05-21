@@ -5,6 +5,7 @@ import { FiSend, FiPaperclip, FiMic, FiWifi, FiWifiOff, FiSettings, FiSmile } fr
 import Sidebar from "../Components/SideBar";
 import Header from "../Components/Header";
 import ChatBubble from "../Components/ChatBubble";
+import useTheme from "../hooks/theme";
 
 class ErrorBoundary extends React.Component {
   state = { hasError: false, error: null };
@@ -59,6 +60,8 @@ const MainPage = () => {
   const recognitionRef = useRef(null);
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
+
+  const { theme, setTheme, toggleTheme } = useTheme();
 
   const connectWebSocket = useCallback(() => {
     setIsLoading(true);
@@ -430,13 +433,7 @@ const MainPage = () => {
   );
 
   return (
-    <div
-      className="h-screen w-screen flex flex-row 
- 
-      text-black 
-  overflow-hidden relative 
-  dark:from-[#282828] dark:to-[#1f1f1f] dark:text-[#f0f0ea]"
-    >
+    <div className="h-screen w-screen flex flex-row dark:bg-[#282828]">
       {/* Overlay */}
       <AnimatePresence>
         {isMobileSidebarOpen && (
@@ -519,7 +516,7 @@ const MainPage = () => {
               </button>
             </motion.div>
           )}
-          <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gradient-to-b from-[#282828] to-[#1f1f1f]">
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-white text-black dark:bg-[#282828] dark:text-white">
             <ErrorBoundary>
               <div className="max-w-4xl mx-auto w-full space-y-4">
                 <AnimatePresence>
@@ -638,19 +635,22 @@ const MainPage = () => {
           </div>
 
           {/* Input area */}
-          <div className="border-t border-gray-700 bg-gradient-to-b from-[#282828] to-[#1f1f1f] p-2 sm:p-3 md:p-4 flex flex-col max-w-4xl mx-auto w-full backdrop-blur-md bg-opacity-90 sticky bottom-0 z-10 rounded-3xl">
+          <div className="p-2 sm:p-3 md:p-4 flex flex-col max-w-4xl mx-auto w-full 
+  backdrop-blur-md
+  text-black dark:text-white 
+  sticky bottom-0 z-10 rounded-3xl">
+
             <div className="flex items-center space-x-1 sm:space-x-2">
-              <button
-                onClick={toggleSettingsModal}
-                className="p-1 sm:p-2 rounded-full bg-[#5a47a5]/90 hover:bg-[#6B46C1] transition-colors focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm min-w-[32px] sm:min-w-[40px]"
-                aria-label="Open settings"
-              >
-                <FiSettings size={18} className="sm:w-6 sm:h-6" />
-              </button>
+
               <div className="relative flex-grow">
                 <textarea
                   ref={inputRef}
-                  className="w-full resize-none rounded-xl border border-gray-600 bg-[#2a2a2a]/90 text-white p-2 sm:p-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#7B54D3] transition-colors shadow-md backdrop-blur-sm"
+                  className="w-full resize-none rounded-xl
+        bg-white/90 dark:bg-[#434343]/90 
+        text-black dark:text-white 
+        p-2 sm:p-3 text-sm sm:text-base 
+        focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500
+        transition-colors shadow-md backdrop-blur-sm"
                   rows={editingMessageId ? 2 : 1}
                   style={{
                     minHeight: "40px",
@@ -678,90 +678,44 @@ const MainPage = () => {
                     editingMessageId ? "Edit message input" : "Message input"
                   }
                 />
-                <button
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="absolute right-1 sm:right-2 top-1/2 transform -translate-y-1/2 p-1 sm:p-2 rounded-full hover:bg-[#5a47a5]/90 transition-colors"
-                  aria-label="Toggle emoji picker"
-                >
-                  <FiSmile size={16} className="sm:w-5 sm:h-5 text-[#7B54D3]" />
-                </button>
               </div>
-              <label
-                htmlFor="file-upload"
-                className="cursor-pointer p-1 sm:p-2 rounded-full hover:bg-[#5a47a5]/90 transition-colors focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm min-w-[32px] sm:min-w-[40px]"
-                title="Attach a file"
-              >
-                <FiPaperclip
-                  size={18}
-                  className="sm:w-6 sm:h-6 text-[#7B54D3]"
-                />
-              </label>
-              <input
-                type="file"
-                id="file-upload"
-                className="hidden"
-                onChange={handleFileUpload}
-              />
+
               <button
                 onClick={handleVoiceInput}
-                className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${
-                  isListening
-                    ? "bg-[#7B54D3] text-white"
-                    : "bg-[#5a47a5]/90 text-gray-100 hover:bg-[#6B46C1]"
-                } focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm`}
+                className={`
+    p-2 sm:p-2 rounded-full transition-colors 
+    min-w-[32px] sm:min-w-[40px] 
+    text-black dark:text-white
+    focus:outline-none focus:ring-2 
+    focus:ring-gray-400 dark:focus:ring-gray-500
+  `}
                 aria-label={isListening ? "Listening..." : "Start voice input"}
                 disabled={isTyping}
               >
                 <FiMic size={18} className="sm:w-6 sm:h-6" />
               </button>
+
+
               <button
-                onClick={
-                  editingMessageId ? handleEditSubmit : () => sendMessage()
-                }
-                className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${
-                  isTyping || !msg.trim()
-                    ? "bg-gray-600/90 text-gray-400 cursor-not-allowed"
-                    : "bg-[#7B54D3] text-white hover:bg-[#6B46C1]"
-                } focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm`}
-                aria-label={
-                  editingMessageId ? "Submit edited message" : "Send message"
-                }
+                onClick={editingMessageId ? handleEditSubmit : () => sendMessage()}
+                className={`
+    p-2 sm:p-2 rounded-full transition-colors 
+    min-w-[32px] sm:min-w-[40px] 
+    ${isTyping || !msg.trim()
+                    ? "text-gray-400 cursor-not-allowed"
+                    : "text-black dark:text-white hover:opacity-80"
+                  } 
+    focus:outline-none focus:ring-2 
+    focus:ring-gray-400 dark:focus:ring-gray-500
+  `}
+                aria-label={editingMessageId ? "Submit edited message" : "Send message"}
                 disabled={isTyping || !msg.trim()}
               >
                 <FiSend size={18} className="sm:w-6 sm:h-6" />
               </button>
-              {/* <div className="p-2 sm:p-2 min-w-[32px] sm:min-w-[40px]">
-                {connectionStatus === "connected" ? (
-                  <FiWifi size={18} className="sm:w-6 sm:h-6 text-green-400" title="Connected" />
-                ) : (
-                  <FiWifiOff size={18} className="sm:w-6 sm:h-6 text-red-400" title="Disconnected" />
-                )}
-              </div> */}
+
+
             </div>
-            <AnimatePresence>
-              {showEmojiPicker && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="mt-1 sm:mt-2 p-2 sm:p-3 bg-[#5a47a5]/90 rounded-lg flex flex-wrap gap-1 sm:gap-2 backdrop-blur-sm shadow-md"
-                >
-                  {["👍", "❤️", "😂", "😮", "😢"].map((emoji) => (
-                    <button
-                      key={emoji}
-                      onClick={() => {
-                        setMsg((prev) => prev + emoji);
-                        setShowEmojiPicker(false);
-                      }}
-                      className="p-1 sm:p-2 text-base sm:text-lg hover:bg-[#6B46C1] rounded-md transition-colors"
-                      aria-label={`Add ${emoji} emoji`}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
         </div>
       </div>

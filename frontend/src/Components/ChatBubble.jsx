@@ -14,17 +14,19 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
   const [showContextMenu, setShowContextMenu] = useState(false);
 
   const bubbleClasses = {
-    user: {
-      container: "justify-end",
-      bubble: "bg-gradient-to-r from-[#6B21A8] to-[#7B54D3] text-white",
-      time: "text-purple-100",
-    },
-    bot: {
-      container: "justify-start",
-      bubble: "bg-gradient-to-r from-[#3a3a38] to-[#4a4a48] text-[#f0f0ea]",
-      time: "text-[#a0a098]",
-    },
-  };
+  user: {
+    container: "justify-end",
+    bubble: "bg-[#e5e5ea] dark:bg-[#3a3a38] text-black dark:text-[#f0f0ea]",
+    time: "text-[#666] dark:text-[#a0a098]",
+  },
+  bot: {
+    container: "justify-start",
+    bubble: "", // No bubble styling
+    time: "text-[#666] dark:text-[#a0a098]",
+    line: "border-l-4 border-gray-400 dark:border-gray-600 pl-4 text-black dark:text-[#f0f0ea]",
+  },
+};
+
 
   const currentStyle = bubbleClasses[message.from];
 
@@ -57,7 +59,7 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
               alt={message.from === "bot" ? "Bot Logo" : "User Avatar"}
               className="w-8 h-8 rounded-full object-cover shadow-md"
             />
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <span className="text-sm font-medium text-black dark:text-white">
               {message.from === "bot" ? "Alice AI" : "You"}
             </span>
           </div>
@@ -72,28 +74,10 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
             <div className="whitespace-pre-wrap break-words text-sm md:text-base">
               {message.text}
             </div>
-            <div className={`text-xs mt-1 text-right text-gray-500 dark:text-gray-300 ${currentStyle.time}`}>
+            <div className={`text-xs mt-1 text-right text-white dark:text-black ${currentStyle.time}`}>
               {formatTime(message.timestamp)}
             </div>
 
-            {message.from === "user" && (
-              <div className="absolute top-2 right-2 hidden group-hover:flex space-x-2">
-                <button
-                  onClick={() => onEdit(message)}
-                  className="p-1 hover:bg-violet-300 dark:hover:bg-[#5a47a5]/80 rounded-full transition-colors backdrop-blur-sm"
-                  aria-label="Edit message"
-                >
-                  <FiEdit size={16} />
-                </button>
-                <button
-                  onClick={() => onDelete(message.id)}
-                  className="p-1 hover:bg-red-300 dark:hover:bg-[#5a47a5]/80 rounded-full transition-colors backdrop-blur-sm"
-                  aria-label="Delete message"
-                >
-                  <FiTrash size={16} />
-                </button>
-              </div>
-            )}
           </motion.div>
         </div>
 
@@ -113,20 +97,6 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
           </div>
         )}
 
-        <div className="flex gap-2 mt-2">
-          {["👍", "❤️"].map((emoji) => (
-            <motion.button
-              key={emoji}
-              whileHover={{ scale: 1.2 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => onAddReaction(message.id, emoji)}
-              className="text-sm p-1 hover:bg-purple-300 dark:hover:bg-[#5a47a5]/50 rounded-full transition-colors backdrop-blur-sm"
-              aria-label={`Add ${emoji} reaction`}
-            >
-              {emoji}
-            </motion.button>
-          ))}
-        </div>
       </div>
 
       <AnimatePresence>
@@ -140,13 +110,13 @@ const ChatBubble = ({ message, isConsecutive, onEdit, onDelete, onAddReaction })
           >
             <button
               onClick={() => onEdit(message)}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-[#6B46C1] transition-colors"
+              className="flex items-center w-full px-4 py-2 text-sm text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-[#6B46C1] transition-colors"
             >
               <FiEdit className="mr-2" size={16} /> Edit
             </button>
             <button
               onClick={() => onDelete(message.id)}
-              className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-white hover:bg-gray-200 dark:hover:bg-[#6B46C1] transition-colors"
+              className="flex items-center w-full px-4 py-2 text-sm text-gray-600 dark:text-white hover:bg-gray-100 dark:hover:bg-[#6B46C1] transition-colors"
             >
               <FiTrash className="mr-2" size={16} /> Delete
             </button>
