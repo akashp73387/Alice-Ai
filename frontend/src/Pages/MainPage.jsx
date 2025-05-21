@@ -430,10 +430,13 @@ const MainPage = () => {
   );
 
   return (
-    <div className="h-screen w-screen flex flex-row 
-  bg-gradient-to-b from-[#ffffff] to-[#e5e5e5] text-black 
+    <div
+      className="h-screen w-screen flex flex-row 
+ 
+      text-black 
   overflow-hidden relative 
-  dark:from-[#282828] dark:to-[#1f1f1f] dark:text-[#f0f0ea]">
+  dark:from-[#282828] dark:to-[#1f1f1f] dark:text-[#f0f0ea]"
+    >
       {/* Overlay */}
       <AnimatePresence>
         {isMobileSidebarOpen && (
@@ -449,8 +452,9 @@ const MainPage = () => {
 
       {/* Sidebar - desktop */}
       <motion.div
-        className={`hidden lg:flex h-full ${isCollapsed ? "w-20" : "w-72"
-          } flex-shrink-0 transition-all duration-300`}
+        className={`hidden lg:flex h-full ${
+          isCollapsed ? "w-20" : "w-72"
+        } flex-shrink-0 transition-all duration-300`}
         animate={{ x: 0 }}
       >
         <Sidebar
@@ -535,12 +539,20 @@ const MainPage = () => {
                         <motion.div
                           className="w-3 h-3 rounded-full bg-[#7B54D3]"
                           animate={{ y: [-4, 4, -4] }}
-                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 0.6,
+                            delay: 0.2,
+                          }}
                         />
                         <motion.div
                           className="w-3 h-3 rounded-full bg-[#7B54D3]"
                           animate={{ y: [-4, 4, -4] }}
-                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 0.6,
+                            delay: 0.4,
+                          }}
                         />
                       </div>
                       <div className="text-gray-400 mt-4">Connecting...</div>
@@ -558,7 +570,9 @@ const MainPage = () => {
                         alt="Alice AI Logo"
                         className="w-16 h-16 mx-auto mb-4 rounded-full shadow-md"
                       />
-                      <div className="text-4xl font-bold text-[#7B54D3] mb-4">Alice AI Assistant</div>
+                      <div className="text-4xl font-bold text-[#7B54D3] mb-4">
+                        Alice AI Assistant
+                      </div>
                       <div className="text-gray-400 max-w-md mx-auto text-lg">
                         Start a new conversation or select one from the sidebar.
                       </div>
@@ -596,15 +610,25 @@ const MainPage = () => {
                         <motion.div
                           className="w-2 h-2 rounded-full bg-[#7B54D3]"
                           animate={{ y: [-4, 4, -4] }}
-                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 0.6,
+                            delay: 0.2,
+                          }}
                         />
                         <motion.div
                           className="w-2 h-2 rounded-full bg-[#7B54D3]"
                           animate={{ y: [-4, 4, -4] }}
-                          transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }}
+                          transition={{
+                            repeat: Infinity,
+                            duration: 0.6,
+                            delay: 0.4,
+                          }}
                         />
                       </div>
-                      <div className="text-sm text-gray-400 italic">Alice is typing...</div>
+                      <div className="text-sm text-gray-400 italic">
+                        Alice is typing...
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -628,18 +652,31 @@ const MainPage = () => {
                   ref={inputRef}
                   className="w-full resize-none rounded-xl border border-gray-600 bg-[#2a2a2a]/90 text-white p-2 sm:p-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-[#7B54D3] transition-colors shadow-md backdrop-blur-sm"
                   rows={editingMessageId ? 2 : 1}
-                  style={{ minHeight: "40px", maxHeight: "100px", fontSize: "inherit" }}
-                  placeholder={editingMessageId ? "Edit your message..." : "Type your message..."}
+                  style={{
+                    minHeight: "40px",
+                    maxHeight: "100px",
+                    fontSize: "inherit",
+                  }}
+                  placeholder={
+                    editingMessageId
+                      ? "Edit your message..."
+                      : "Type your message..."
+                  }
                   value={msg}
                   onChange={(e) => {
                     setMsg(e.target.value);
                     if (editingMessageId) setEditText(e.target.value);
                     stopListening();
                     e.target.style.height = "auto";
-                    e.target.style.height = `${Math.min(e.target.scrollHeight, 100)}px`;
+                    e.target.style.height = `${Math.min(
+                      e.target.scrollHeight,
+                      100
+                    )}px`;
                   }}
                   onKeyDown={handleKeyPress}
-                  aria-label={editingMessageId ? "Edit message input" : "Message input"}
+                  aria-label={
+                    editingMessageId ? "Edit message input" : "Message input"
+                  }
                 />
                 <button
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -654,7 +691,10 @@ const MainPage = () => {
                 className="cursor-pointer p-1 sm:p-2 rounded-full hover:bg-[#5a47a5]/90 transition-colors focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm min-w-[32px] sm:min-w-[40px]"
                 title="Attach a file"
               >
-                <FiPaperclip size={18} className="sm:w-6 sm:h-6 text-[#7B54D3]" />
+                <FiPaperclip
+                  size={18}
+                  className="sm:w-6 sm:h-6 text-[#7B54D3]"
+                />
               </label>
               <input
                 type="file"
@@ -664,22 +704,28 @@ const MainPage = () => {
               />
               <button
                 onClick={handleVoiceInput}
-                className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${isListening
-                  ? "bg-[#7B54D3] text-white"
-                  : "bg-[#5a47a5]/90 text-gray-100 hover:bg-[#6B46C1]"
-                  } focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm`}
+                className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${
+                  isListening
+                    ? "bg-[#7B54D3] text-white"
+                    : "bg-[#5a47a5]/90 text-gray-100 hover:bg-[#6B46C1]"
+                } focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm`}
                 aria-label={isListening ? "Listening..." : "Start voice input"}
                 disabled={isTyping}
               >
                 <FiMic size={18} className="sm:w-6 sm:h-6" />
               </button>
               <button
-                onClick={editingMessageId ? handleEditSubmit : () => sendMessage()}
-                className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${isTyping || !msg.trim()
-                  ? "bg-gray-600/90 text-gray-400 cursor-not-allowed"
-                  : "bg-[#7B54D3] text-white hover:bg-[#6B46C1]"
-                  } focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm`}
-                aria-label={editingMessageId ? "Submit edited message" : "Send message"}
+                onClick={
+                  editingMessageId ? handleEditSubmit : () => sendMessage()
+                }
+                className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${
+                  isTyping || !msg.trim()
+                    ? "bg-gray-600/90 text-gray-400 cursor-not-allowed"
+                    : "bg-[#7B54D3] text-white hover:bg-[#6B46C1]"
+                } focus:outline-none focus:ring-2 focus:ring-[#7B54D3] backdrop-blur-sm`}
+                aria-label={
+                  editingMessageId ? "Submit edited message" : "Send message"
+                }
                 disabled={isTyping || !msg.trim()}
               >
                 <FiSend size={18} className="sm:w-6 sm:h-6" />

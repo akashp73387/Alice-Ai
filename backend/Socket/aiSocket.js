@@ -1,20 +1,19 @@
 import { WebSocketServer } from "ws";
 import crypto from "crypto";
-import http from "http";
 
 export const setupSocket = (server) => {
   const wss = new WebSocketServer({ server });
 
   wss.on("connection", (ws, req) => {
-    const clientId = crypto.randomUUID(); // Optional: Generate client ID
+    const clientId = crypto.randomUUID();
     console.log("User connected:", clientId);
 
     ws.on("message", (data) => {
       try {
-        const msg = JSON.parse(data); // assuming client sends JSON
+        const msg = JSON.parse(data);
         console.log("Received message:", msg);
 
-        const echoResponse = `Autointelli Say: ${msg.message}`;
+        const echoResponse = `${msg.message}`;
         ws.send(
           JSON.stringify({ type: "bot_response", message: echoResponse })
         );
