@@ -33,13 +33,13 @@ const Sidebar = ({
         {!isCollapsed && (
           <h2 className="text-xl font-bold tracking-tight text-gray-800 dark:text-white">
             <span className='font-bold text-2xl tracking-wide'>Auto</span>
-            <span className='text-orange-500 ps-1'>i</span>
-            <span className='text-purple-500 ps-0.5'>n</span>
+            <span className='text-purple-600 '>intelli</span>
+            {/* <span className='text-purple-500 ps-0.5'>n</span>
             <span className='text-blue-500 ps-0.5'>t</span>
             <span className='text-blue-400 ps-0.5'>e</span>
             <span className='text-green-500 ps-0.5'>l</span>
             <span className='text-orange-500 ps-0.5'>l</span>
-            <span className='text-indigo-500 ps-0.5'>i</span>
+            <span className='text-indigo-500 ps-0.5'>i</span> */}
           </h2>
         )}
         {isMobile ? (
