@@ -38,8 +38,8 @@ const MainPage = () => {
 
   const connectWebSocket = useCallback(() => {
     setIsLoading(true);
-    // const socket = new WebSocket("ws://localhost:3001");
-    const socket = new WebSocket("ws://195.201.164.158:8765");
+    const socket = new WebSocket("ws://localhost:3001");
+    // const socket = new WebSocket("ws://195.201.164.158:8765");
     socketRef.current = socket;
 
     socket.onopen = () => {
