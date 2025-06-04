@@ -36,12 +36,17 @@ const ChatBubble = ({ message, isConsecutive, onEdit }) => {
 
   const { theme } = useTheme();
 
+  const isWelcomeMessage =
+    message.from === "bot" && message.text.toLowerCase().includes("welcome");
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className={`flex ${currentStyle.container} ${isConsecutive ? "mt-1" : "mt-4"} px-4 relative`}
+      className={`flex ${currentStyle.container} ${
+        isConsecutive ? "mt-1" : "mt-4"
+      } px-4 relative`}
     >
       <div className="flex flex-col max-w-[80%] md:max-w-[70%]">
         {!isConsecutive && message.from === "bot" && (
@@ -58,7 +63,9 @@ const ChatBubble = ({ message, isConsecutive, onEdit }) => {
         )}
 
         <div className="flex items-end relative">
-          <div className={`relative px-4 py-3 rounded-xl ${currentStyle.bubble} shadow-lg backdrop-blur-sm bg-opacity-80`}>
+          <div
+            className={`relative px-4 py-3 rounded-xl ${currentStyle.bubble} shadow-lg backdrop-blur-sm bg-opacity-80`}
+          >
             <div className="whitespace-pre-wrap break-words text-sm md:text-base">
               {message.text}
             </div>
@@ -68,7 +75,8 @@ const ChatBubble = ({ message, isConsecutive, onEdit }) => {
           </div>
         </div>
 
-        {message.from === "bot" && (
+        {/* Copy button for bot message (except welcome message) */}
+        {message.from === "bot" && !message.text.startsWith("Hello!") && (
           <div className="flex gap-4 mt-1 ms-2">
             <div className="relative group flex flex-col items-center">
               <button
@@ -84,7 +92,7 @@ const ChatBubble = ({ message, isConsecutive, onEdit }) => {
           </div>
         )}
 
-        {/* Copy and Edit icons with text appearing below on hover */}
+        {/* Copy and Edit icons for user messages */}
         {message.from === "user" && (
           <div className="flex gap-4 mt-1 ms-2">
             {/* Copy Button */}

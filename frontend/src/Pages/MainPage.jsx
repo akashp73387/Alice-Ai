@@ -38,19 +38,31 @@ const MainPage = () => {
 
   const connectWebSocket = useCallback(() => {
     setIsLoading(true);
-    const socket = new WebSocket("ws://localhost:3001");
-    // const socket = new WebSocket("ws://195.201.164.158:8765");
+     const socket = new WebSocket(import.meta.env.VITE_API_URL);
     socketRef.current = socket;
-
     socket.onopen = () => {
       setConnectionStatus("connected");
       setHasConnected(true);
       setConnectionError(null);
       setIsLoading(false);
       reconnectAttempts.current = 0;
-      addBotMessage("Hello! I'm your Alice AI assistant. How can I help you today?");
-    };
 
+      // Only show welcome if chat is empty (initial load only)
+      setChat((prevChat) => {
+        if (prevChat.length === 0) {
+          return [
+            {
+              id: Date.now(),
+              from: "bot",
+              text: "Hello! I'm your Alice AI assistant. How can I help you today?",
+              timestamp: new Date(),
+            },
+          ];
+        }
+        return prevChat;
+      });
+    };
+    
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -62,26 +74,40 @@ const MainPage = () => {
       }
     };
 
-    socket.onclose = () => {
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+      if (!hasConnected) {
+        setConnectionError(
+          "Failed to connect. Make sure the WebSocket server is running at " +
+            import.meta.env.VITE_API_URL
+        );
+      }
       setConnectionStatus("disconnected");
       setIsLoading(false);
+    };
+
+    socket.onclose = (event) => {
+      console.warn("WebSocket closed:", event);
+      setConnectionStatus("disconnected");
+      setIsLoading(false);
+
       if (hasConnected && reconnectAttempts.current < maxReconnectAttempts) {
-        addBotMessage(`Connection lost. Reconnecting (${reconnectAttempts.current + 1}/${maxReconnectAttempts})...`);
+        addBotMessage(
+          `Connection lost. Reconnecting (${
+            reconnectAttempts.current + 1
+          }/${maxReconnectAttempts})...`
+        );
         setTimeout(() => {
           reconnectAttempts.current += 1;
           connectWebSocket();
         }, 3000);
       } else if (hasConnected) {
-        setConnectionError("Failed to reconnect to server. Please check your connection.");
+        setConnectionError(
+          "Failed to reconnect to server after multiple attempts."
+        );
       }
     };
-
-    socket.onerror = (error) => {
-      setConnectionStatus("disconnected");
-      setIsLoading(false);
-      setConnectionError("WebSocket error. Please ensure the server is running.");
-      console.error("WebSocket error:", error);
-    };
+    
   }, [hasConnected]);
 
   useEffect(() => {
