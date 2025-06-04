@@ -61,25 +61,57 @@ const Header = ({ onMenuClick, onSidebarToggle, title, isSidebarCollapsed }) => 
       </button>
 
       {/* Centered Logo */}
-     <div className="flex-1 flex justify-start items-center h-[74px]">
-  <img
-    src={theme === 'dark' ? alicedark : alicelight}
-    alt="Alice Logo"
-    className="h-full w-auto object-contain"
-  />
-</div>
-
+      <div className="flex-1 flex justify-start items-center h-[74px]">
+        <img
+          src={theme === 'dark' ? alicedark : alicelight}
+          alt="Alice Logo"
+          className="h-full w-auto object-contain"
+        />
+      </div>
 
       {/* Right Controls */}
       <div className="relative flex items-center space-x-3">
-
         {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-[#3a3a3a] transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400"
+          className="relative p-2 rounded-full bg-gray-100 dark:bg-[#2a2a2a] hover:bg-gray-200 dark:hover:bg-[#3a3a3a] transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-600"
           aria-label="Toggle Theme"
         >
-          {theme === 'dark' ? <FiSun size={24} /> : <FiMoon size={24} />}
+          <AnimatePresence mode="wait">
+            {theme === 'dark' ? (
+                <motion.div
+                key="moon"
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="text-gray-800 dark:text-gray-200"
+              >
+                <FiMoon size={24} />
+              </motion.div>
+            
+            ) : (
+            
+
+                <motion.div
+                key="sun"
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="text-yellow-500 dark:text-yellow-400"
+              >
+                <FiSun size={24} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {/* Animated background effect */}
+          <motion.div
+            className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-300 to-orange-400 dark:from-gray-600 dark:to-gray-800 opacity-0 group-hover:opacity-20"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5 }}
+          />
         </button>
 
         {/* Profile Menu Button */}
