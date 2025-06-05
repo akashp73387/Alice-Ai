@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiSend, FiPaperclip, FiMic } from "react-icons/fi";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 import Sidebar from "../Components/SideBar";
 import Header from "../Components/Header";
 import ChatBubble from "../Components/ChatBubble";
@@ -38,7 +40,7 @@ const MainPage = () => {
 
   const connectWebSocket = useCallback(() => {
     setIsLoading(true);
-     const socket = new WebSocket(import.meta.env.VITE_API_URL);
+    const socket = new WebSocket(import.meta.env.VITE_API_URL);
     socketRef.current = socket;
     socket.onopen = () => {
       setConnectionStatus("connected");
@@ -62,7 +64,7 @@ const MainPage = () => {
         return prevChat;
       });
     };
-    
+
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -107,7 +109,6 @@ const MainPage = () => {
         );
       }
     };
-    
   }, [hasConnected]);
 
   useEffect(() => {
@@ -151,7 +152,10 @@ const MainPage = () => {
   }, [connectWebSocket]);
 
   const addMessage = (from, text, id = Date.now(), reactions = []) => {
-    setChat((prev) => [...prev, { id, from, text, timestamp: new Date(), reactions }]);
+    setChat((prev) => [
+      ...prev,
+      { id, from, text, timestamp: new Date(), reactions },
+    ]);
   };
 
   const addBotMessage = (text) => addMessage("bot", text);
@@ -160,7 +164,9 @@ const MainPage = () => {
     if (activeChat) {
       setChatHistory((prev) =>
         prev.map((chat) =>
-          chat.id === activeChat ? { ...chat, lastMessage: message, timestamp: new Date() } : chat
+          chat.id === activeChat
+            ? { ...chat, lastMessage: message, timestamp: new Date() }
+            : chat
         )
       );
     }
@@ -182,9 +188,12 @@ const MainPage = () => {
   const sendMessage = (messageToSend = null) => {
     stopListening();
     const text = messageToSend !== null ? messageToSend : msg;
-    if (!text.trim() || connectionStatus !== "connected" || !socketRef.current) return;
+    if (!text.trim() || connectionStatus !== "connected" || !socketRef.current)
+      return;
 
-    socketRef.current.send(JSON.stringify({ user_id: 2090364640, message: text }));
+    socketRef.current.send(
+      JSON.stringify({ user_id: 2090364640, message: text })
+    );
     addMessage("user", text);
     setMsg("");
     setIsTyping(true);
@@ -238,7 +247,8 @@ const MainPage = () => {
   };
 
   const handleVoiceInput = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech Recognition not supported");
       return;
@@ -277,7 +287,9 @@ const MainPage = () => {
     setChat([]);
     setActiveChat(null);
     setChatTitle("New Chat");
-    addBotMessage("Hello! I'm your Alice AI assistant. What would you like to discuss?");
+    addBotMessage(
+      "Hello! I'm your Alice AI assistant. What would you like to discuss?"
+    );
   };
 
   const loadChat = (chatId) => {
@@ -285,7 +297,12 @@ const MainPage = () => {
     const selectedChat = chatHistory.find((c) => c.id === chatId);
     setChatTitle(selectedChat?.title || "Chat");
     setChat([
-      { id: Date.now(), from: "bot", text: `Loading chat ${chatId}...`, timestamp: new Date() },
+      {
+        id: Date.now(),
+        from: "bot",
+        text: `Loading chat ${chatId}...`,
+        timestamp: new Date(),
+      },
       {
         id: Date.now() + 1,
         from: "user",
@@ -312,7 +329,9 @@ const MainPage = () => {
     if (!editText.trim()) return;
     setChat((prev) =>
       prev.map((msg) =>
-        msg.id === editingMessageId ? { ...msg, text: editText, timestamp: new Date() } : msg
+        msg.id === editingMessageId
+          ? { ...msg, text: editText, timestamp: new Date() }
+          : msg
       )
     );
     setEditingMessageId(null);
@@ -366,8 +385,9 @@ const MainPage = () => {
 
       {/* Sidebar - desktop */}
       <motion.div
-        className={`hidden lg:flex h-full ${isCollapsed ? "w-20" : "w-72"
-          } flex-shrink-0 transition-all duration-300`}
+        className={`hidden lg:flex h-full ${
+          isCollapsed ? "w-20" : "w-72"
+        } flex-shrink-0 transition-all duration-300`}
         animate={{ x: 0 }}
       >
         <Sidebar
@@ -425,8 +445,18 @@ const MainPage = () => {
               className="absolute top-0 left-0 right-0 bg-gradient-to-r from-red-500 to-red-600 text-white text-center p-3 z-10 shadow-lg dark:from-red-600 dark:to-red-700"
             >
               <div className="flex items-center justify-center space-x-2">
-                <svg className="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-5 h-5 animate-pulse"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 <span>Network error please try again</span>
               </div>
@@ -443,63 +473,20 @@ const MainPage = () => {
             <div className="max-w-4xl mx-auto w-full space-y-4">
               <AnimatePresence>
                 {isLoading && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.4 }}
-                    className="text-center py-16"
-                  >
-                    <div className="flex justify-center items-center space-x-3">
-                      <motion.div
-                        className="w-4 h-4 rounded-full bg-gradient-to-br from-[#7B54D3] to-[#A78BFA]"
-                        animate={{
-                          scale: [1, 1.4, 1],
-                          opacity: [0.6, 1, 0.6]
-                        }}
-                        transition={{
-                          duration: 0.8,
-                          repeat: Infinity,
-                          ease: "easeInOut"
-                        }}
-                      />
-                      <motion.div
-                        className="w-4 h-4 rounded-full bg-gradient-to-br from-[#7B54D3] to-[#A78BFA]"
-                        animate={{
-                          scale: [1, 1.4, 1],
-                          opacity: [0.6, 1, 0.6]
-                        }}
-                        transition={{
-                          duration: 0.8,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                          delay: 0.2
-                        }}
-                      />
-                      <motion.div
-                        className="w-4 h-4 rounded-full bg-gradient-to-br from-[#7B54D3] to-[#A78BFA]"
-                        animate={{
-                          scale: [1, 1.4, 1],
-                          opacity: [0.6, 1, 0.6]
-                        }}
-                        transition={{
-                          duration: 0.8,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                          delay: 0.4
-                        }}
-                      />
+                  <div className="space-y-6 py-4 px-2 sm:px-4">
+                    <div className="flex items-start space-x-3">
+                      <Skeleton circle width={40} height={40} />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton width={100} height={20} />
+                        {/* Responsive width: 100% up to max width */}
+                        <div className="w-full max-w-[500px]">
+                          <Skeleton height={60} />
+                        </div>
+                      </div>
                     </div>
-                    <motion.div
-                      className="text-gray-400 mt-4 text-sm font-medium"
-                      animate={{ opacity: [0.7, 1, 0.7] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
-                    >
-                      Establishing connection...
-                    </motion.div>
-                  </motion.div>
+                  </div>
                 )}
-             
+
                 {!isLoading &&
                   chat.map((msg, i) => (
                     <ChatBubble
@@ -511,70 +498,70 @@ const MainPage = () => {
                       onAddReaction={handleAddReaction}
                     />
                   ))}
-               {isTyping && (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: 20 }}
-    transition={{ duration: 0.4, ease: "easeOut" }}
-    className="flex justify-start items-center space-x-3 p-4"
-  >
-    <motion.img
-      src={alicelogo}
-      alt="Alice AI"
-      className="w-6 h-6 rounded-full"
-      animate={{ scale: [1, 1.1, 1] }}
-      transition={{ duration: 1.5, repeat: Infinity }}
-    />
-    <div className="flex space-x-2">
-      <motion.div
-        className="w-2 h-2 rounded-full bg-gradient-to-br from-[#7B54D3] to-[#A78BFA]"
-        animate={{
-          y: [-4, 4, -4],
-          opacity: [0.5, 1, 0.5]
-        }}
-        transition={{
-          duration: 0.6,
-          repeat: Infinity,
-          ease: "easeInOut"
-        }}
-      />
-      <motion.div
-        className="w-2 h-2 rounded-full bg-gradient-to-br from-[#7B54D3] to-[#A78BFA]"
-        animate={{
-          y: [-4, 4, -4],
-          opacity: [0.5, 1, 0.5]
-        }}
-        transition={{
-          duration: 0.6,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 0.2
-        }}
-      />
-      <motion.div
-        className="w-2 h-2 rounded-full bg-gradient-to-br from-[#7B54D3] to-[#A78BFA]"
-        animate={{
-          y: [-4, 4, -4],
-          opacity: [0.5, 1, 0.5]
-        }}
-        transition={{
-          duration: 0.6,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 0.4
-        }}
-      />
-    </div>
-    <motion.div
-      className="text-sm text-gray-400 italic"
-      animate={{ opacity: [0.7, 1, 0.7] }}
-      transition={{ duration: 1.5, repeat: Infinity }}
-    >
-      Alice is typing...
-    </motion.div>
-  </motion.div>
-)}
+                {isTyping && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                    className="flex justify-start items-center space-x-3 p-4"
+                  >
+                    <motion.img
+                      src={alicelogo}
+                      alt="Alice AI"
+                      className="w-6 h-6 rounded-full"
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    />
+                    <div className="flex space-x-2">
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-gradient-to-br from-[#7B54D3] to-[#A78BFA]"
+                        animate={{
+                          y: [-4, 4, -4],
+                          opacity: [0.5, 1, 0.5],
+                        }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      />
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-gradient-to-br from-[#7B54D3] to-[#A78BFA]"
+                        animate={{
+                          y: [-4, 4, -4],
+                          opacity: [0.5, 1, 0.5],
+                        }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 0.2,
+                        }}
+                      />
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-gradient-to-br from-[#7B54D3] to-[#A78BFA]"
+                        animate={{
+                          y: [-4, 4, -4],
+                          opacity: [0.5, 1, 0.5],
+                        }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                          delay: 0.4,
+                        }}
+                      />
+                    </div>
+                    <motion.div
+                      className="text-sm text-gray-400 italic"
+                      animate={{ opacity: [0.7, 1, 0.7] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      Alice is typing...
+                    </motion.div>
+                  </motion.div>
+                )}
               </AnimatePresence>
               <div ref={messagesEndRef} />
             </div>
@@ -626,13 +613,17 @@ const MainPage = () => {
               </button>
 
               <button
-                onClick={editingMessageId ? handleEditSubmit : () => sendMessage()}
+                onClick={
+                  editingMessageId ? handleEditSubmit : () => sendMessage()
+                }
                 className={`p-2 sm:p-2 rounded-full transition-colors min-w-[32px] sm:min-w-[40px] ${
                   isTyping || !msg.trim()
                     ? "text-gray-400 cursor-not-allowed"
                     : "text-black dark:text-white hover:opacity-80"
                 } focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-500`}
-                aria-label={editingMessageId ? "Submit edited message" : "Send message"}
+                aria-label={
+                  editingMessageId ? "Submit edited message" : "Send message"
+                }
                 disabled={isTyping || !msg.trim()}
               >
                 <FiSend size={18} className="sm:w-6 sm:h-6" />
